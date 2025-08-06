@@ -25,6 +25,7 @@ Deno.serve(async (req) => {
 
     const googleAccessToken = Deno.env.get("GOOGLE_API_ACCESS_TOKEN");
     const locationId = Deno.env.get("GOOGLE_BUSINESS_LOCATION_ID");
+    const accountId = Deno.env.get("GOOGLE_BUSINESS_ACCOUNT_ID");
 
     if (!googleAccessToken || !locationId) {
       throw new Error("Missing GBP API credentials");
@@ -37,10 +38,9 @@ Deno.serve(async (req) => {
       .in("instagram_id", postIds);
 
     if (error) throw error;
-
     let successCount = 0;
     let errorCount = 0;
-    const results = [];
+    const results: { id: string; success: boolean }[] = [];
 
     for (const post of posts) {
       try {
@@ -53,10 +53,11 @@ Deno.serve(async (req) => {
               sourceUrl: post.media_url,
             },
           ],
+          topicType: "STANDARD", // ★ここを追加
         };
 
         const gbpResponse = await fetch(
-          `https://mybusiness.googleapis.com/v4/locations/${locationId}/localPosts`,
+          `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/localPosts`,
           {
             method: "POST",
             headers: {
